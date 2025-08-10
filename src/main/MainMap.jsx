@@ -18,8 +18,11 @@ import MapGeocoder from '../map/geocoder/MapGeocoder';
 import MapScale from '../map/MapScale';
 import MapNotification from '../map/notification/MapNotification';
 import useFeatures from '../common/util/useFeatures';
+import MapRoutePath from '../map/MapRoutePath';
+import MapRoutePoints from '../map/MapRoutePoints';
+import MapCamera from '../map/MapCamera';
 
-const MainMap = ({ filteredPositions, selectedPosition, onEventsClick }) => {
+const MainMap = ({ filteredPositions, selectedPosition, onEventsClick, routePositions = [] }) => {
   const theme = useTheme();
   const dispatch = useDispatch();
 
@@ -40,6 +43,13 @@ const MainMap = ({ filteredPositions, selectedPosition, onEventsClick }) => {
         <MapGeofence />
         <MapAccuracy positions={filteredPositions} />
         <MapLiveRoutes />
+        {routePositions && routePositions.length > 1 && (
+          <>
+            <MapRoutePath positions={routePositions} />
+            <MapRoutePoints positions={routePositions} showSpeedControl />
+            <MapCamera positions={routePositions} />
+          </>
+        )}
         <MapPositions
           positions={filteredPositions}
           onMarkerClick={onMarkerClick}
@@ -47,7 +57,9 @@ const MainMap = ({ filteredPositions, selectedPosition, onEventsClick }) => {
           showStatus
         />
         <MapDefaultCamera />
-        <MapSelectedDevice />
+        {!routePositions || routePositions.length <= 1 ? (
+          <MapSelectedDevice />
+        ) : null}
         <PoiMap />
       </MapView>
       <MapScale />

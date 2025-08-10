@@ -16,6 +16,7 @@ import useFilter from './useFilter';
 import MainToolbar from './MainToolbar';
 import MainMap from './MainMap';
 import { useAttributePreference } from '../common/util/preferences';
+import dayjs from 'dayjs';
 
 const useStyles = makeStyles()((theme) => ({
   root: {
@@ -89,6 +90,8 @@ const MainPage = () => {
   const [devicesOpen, setDevicesOpen] = useState(desktop);
   const [eventsOpen, setEventsOpen] = useState(false);
 
+  const [routePositions, setRoutePositions] = useState([]);
+
   const onEventsClick = useCallback(() => setEventsOpen(true), [setEventsOpen]);
 
   useEffect(() => {
@@ -96,6 +99,31 @@ const MainPage = () => {
       setDevicesOpen(false);
     }
   }, [desktop, mapOnSelect, selectedDeviceId]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    (async () => {
+      if (selectedDeviceId) {
+        const from = dayjs().startOf('day').toISOString();
+        const to = dayjs().toISOString();
+        const query = new URLSearchParams({ deviceId: selectedDeviceId, from, to });
+        try {
+          const response = await fetch(`/api/positions?${query.toString()}`, { signal: controller.signal });
+          if (response.ok) {
+            const positions = await response.json();
+            setRoutePositions(Array.isArray(positions) ? positions : []);
+          } else {
+            setRoutePositions([]);
+          }
+        } catch (e) {
+          setRoutePositions([]);
+        }
+      } else {
+        setRoutePositions([]);
+      }
+    })();
+    return () => controller.abort();
+  }, [selectedDeviceId]);
 
   useFilter(keyword, filter, filterSort, filterMap, positions, setFilteredDevices, setFilteredPositions);
 
@@ -106,6 +134,7 @@ const MainPage = () => {
           filteredPositions={filteredPositions}
           selectedPosition={selectedPosition}
           onEventsClick={onEventsClick}
+          routePositions={routePositions}
         />
       )}
       <div className={classes.sidebar}>
@@ -131,6 +160,7 @@ const MainPage = () => {
                 filteredPositions={filteredPositions}
                 selectedPosition={selectedPosition}
                 onEventsClick={onEventsClick}
+                routePositions={routePositions}
               />
             </div>
           )}
