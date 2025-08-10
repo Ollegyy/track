@@ -62,14 +62,6 @@ const useStyles = makeStyles()((theme) => ({
   },
 }));
 
-function getTodayDateRangeIso() {
-  const now = new Date();
-  const from = new Date(now);
-  from.setHours(0, 0, 0, 0);
-  // Traccar and many backends expect ISO timestamps in UTC
-  return { from: from.toISOString(), to: now.toISOString() };
-}
-
 const MainPage = () => {
   const { classes } = useStyles();
   const dispatch = useDispatch();
@@ -107,61 +99,6 @@ const MainPage = () => {
 
   useFilter(keyword, filter, filterSort, filterMap, positions, setFilteredDevices, setFilteredPositions);
 
-  // Today track for selected device
-  const [todayTrack, setTodayTrack] = useState([]);
-  useEffect(() => {
-    const abortController = new AbortController();
-
-    async function fetchTodayTrack(deviceId) {
-      const { from, to } = getTodayDateRangeIso();
-
-      try {
-        // Try Traccar-like route report API first
-        const response = await fetch('/api/reports/route', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ deviceIds: [deviceId], from, to }),
-          signal: abortController.signal,
-        });
-
-        if (!response.ok) {
-          throw new Error(`Route request failed with status ${response.status}`);
-        }
-
-        const data = await response.json();
-        // Some backends return nested arrays; normalize to a flat array of points
-        const rawPoints = Array.isArray(data) ? data.flat() : [];
-        const coordinates = rawPoints
-          .map((p) => {
-            const lat = p.latitude ?? p.lat;
-            const lon = p.longitude ?? p.lon ?? p.lng;
-            if (typeof lat === 'number' && typeof lon === 'number') {
-              return [lat, lon];
-            }
-            return null;
-          })
-          .filter(Boolean);
-        setTodayTrack(coordinates);
-      } catch (error) {
-        if (abortController.signal.aborted) return;
-        // Fallback: clear track on error
-        setTodayTrack([]);
-        // Optionally, log to console without disrupting UI
-        // eslint-disable-next-line no-console
-        console.warn('Failed to load today track:', error);
-      }
-    }
-
-    if (selectedDeviceId) {
-      setTodayTrack([]);
-      fetchTodayTrack(selectedDeviceId);
-    } else {
-      setTodayTrack([]);
-    }
-
-    return () => abortController.abort();
-  }, [selectedDeviceId]);
-
   return (
     <div className={classes.root}>
       {desktop && (
@@ -169,7 +106,6 @@ const MainPage = () => {
           filteredPositions={filteredPositions}
           selectedPosition={selectedPosition}
           onEventsClick={onEventsClick}
-          todayTrack={todayTrack}
         />
       )}
       <div className={classes.sidebar}>
@@ -195,7 +131,6 @@ const MainPage = () => {
                 filteredPositions={filteredPositions}
                 selectedPosition={selectedPosition}
                 onEventsClick={onEventsClick}
-                todayTrack={todayTrack}
               />
             </div>
           )}
