@@ -107,56 +107,36 @@ const MainPage = () => {
 
   useFilter(keyword, filter, filterSort, filterMap, positions, setFilteredDevices, setFilteredPositions);
 
-  // Today track for selected device
-  const [todayTrack, setTodayTrack] = useState([]);
+  // Today positions for selected device (to draw track like ReplayPage)
+  const [todayPositions, setTodayPositions] = useState([]);
   useEffect(() => {
     const abortController = new AbortController();
 
-    async function fetchTodayTrack(deviceId) {
+    async function fetchTodayPositions(deviceId) {
       const { from, to } = getTodayDateRangeIso();
-
+      const query = new URLSearchParams({ deviceId, from, to });
       try {
-        // Try Traccar-like route report API first
-        const response = await fetch('/api/reports/route', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ deviceIds: [deviceId], from, to }),
-          signal: abortController.signal,
-        });
-
-        if (!response.ok) {
-          throw new Error(`Route request failed with status ${response.status}`);
+        const response = await fetch(`/api/positions?${query.toString()}`, { signal: abortController.signal });
+        if (response.ok) {
+          const data = await response.json();
+          setTodayPositions(Array.isArray(data) ? data : []);
+        } else {
+          setTodayPositions([]);
         }
-
-        const data = await response.json();
-        // Some backends return nested arrays; normalize to a flat array of points
-        const rawPoints = Array.isArray(data) ? data.flat() : [];
-        const coordinates = rawPoints
-          .map((p) => {
-            const lat = p.latitude ?? p.lat;
-            const lon = p.longitude ?? p.lon ?? p.lng;
-            if (typeof lat === 'number' && typeof lon === 'number') {
-              return [lat, lon];
-            }
-            return null;
-          })
-          .filter(Boolean);
-        setTodayTrack(coordinates);
       } catch (error) {
-        if (abortController.signal.aborted) return;
-        // Fallback: clear track on error
-        setTodayTrack([]);
-        // Optionally, log to console without disrupting UI
-        // eslint-disable-next-line no-console
-        console.warn('Failed to load today track:', error);
+        if (!abortController.signal.aborted) {
+          setTodayPositions([]);
+          // eslint-disable-next-line no-console
+          console.warn('Failed to load today positions:', error);
+        }
       }
     }
 
     if (selectedDeviceId) {
-      setTodayTrack([]);
-      fetchTodayTrack(selectedDeviceId);
+      setTodayPositions([]);
+      fetchTodayPositions(selectedDeviceId);
     } else {
-      setTodayTrack([]);
+      setTodayPositions([]);
     }
 
     return () => abortController.abort();
@@ -169,7 +149,7 @@ const MainPage = () => {
           filteredPositions={filteredPositions}
           selectedPosition={selectedPosition}
           onEventsClick={onEventsClick}
-          todayTrack={todayTrack}
+          todayPositions={todayPositions}
         />
       )}
       <div className={classes.sidebar}>
@@ -195,7 +175,7 @@ const MainPage = () => {
                 filteredPositions={filteredPositions}
                 selectedPosition={selectedPosition}
                 onEventsClick={onEventsClick}
-                todayTrack={todayTrack}
+                todayPositions={todayPositions}
               />
             </div>
           )}

@@ -19,6 +19,10 @@ import MapScale from '../map/MapScale';
 import MapNotification from '../map/notification/MapNotification';
 import useFeatures from '../common/util/useFeatures';
 
+import MapRoutePath from '../map/MapRoutePath';
+import MapRoutePoints from '../map/MapRoutePoints';
+import MapCamera from '../map/MapCamera';
+
 
 import {
   IconButton, Paper, Slider, Toolbar, Typography,
@@ -98,7 +102,7 @@ const useStyles = makeStyles()((theme) => ({
 }));
 
 
-const MainMap = ({ filteredPositions, selectedPosition, onEventsClick }) => {
+const MainMap = ({ filteredPositions, selectedPosition, onEventsClick, todayPositions }) => {
   const theme = useTheme();
   const dispatch = useDispatch();
 
@@ -199,12 +203,17 @@ const t = useTranslation();
 
   return (
     <>
-    {'Test-1 layer track'}
       <MapView>
         <MapOverlay />
         <MapGeofence />
         <MapAccuracy positions={filteredPositions} />
         <MapLiveRoutes />
+        {todayPositions && todayPositions.length > 1 && (
+          <>
+            <MapRoutePath positions={todayPositions} />
+            <MapRoutePoints positions={todayPositions} />
+          </>
+        )}
         <MapPositions
           positions={filteredPositions}
           onMarkerClick={onMarkerClick}
@@ -212,64 +221,21 @@ const t = useTranslation();
           showStatus
         />
         <MapDefaultCamera />
+        {todayPositions && todayPositions.length > 1 && (
+          <MapCamera positions={todayPositions} />
+        )}
         <MapSelectedDevice />
         <PoiMap />
       </MapView>
       <MapScale />
       <MapCurrentLocation />
       <MapGeocoder />
-      {'Test-2 layer track'}
       {!features.disableEvents && (
         <MapNotification enabled={eventsAvailable} onClick={onEventsClick} />
       )}
       {desktop && (
         <MapPadding start={parseInt(theme.dimensions.drawerWidthDesktop, 10) + parseInt(theme.spacing(1.5), 10)} />
       )}
-{'Test-3 layer track'}
-
-{/* Dobavleno */}
-{'Test-4 layer track'}
-{/*
- <div>
- <Paper elevation={3} square>
-          <Toolbar>
-            <IconButton edge="start" sx={{ mr: 2 }} onClick={() => navigate(-1)}>
-              <BackIcon />
-            </IconButton>
-            <Typography variant="h6" >{t('reportReplay')}</Typography>
-            {!expanded && (
-              <>
-                <IconButton onClick={handleDownload}>
-                  <DownloadIcon />
-                </IconButton>
-                <IconButton edge="end" onClick={() => setExpanded(true)}>
-                  <TuneIcon />
-                </IconButton>
-              </>
-            )}
-          </Toolbar>
-        </Paper>
-
-
-
-                       <div className={classes.controls}>
-                      {`${index + 1}/${positions.length}`}
-                      <IconButton onClick={() => setIndex((index) => index - 1)} disabled={playing || index <= 0}>
-                        <FastRewindIcon />
-                      </IconButton>
-                      <IconButton onClick={() => setPlaying(!playing)} disabled={index >= positions.length - 1}>
-                        {playing ? <PauseIcon /> : <PlayArrowIcon /> }
-                      </IconButton>
-                      <IconButton onClick={() => setIndex((index) => index + 1)} disabled={playing || index >= positions.length - 1}>
-                        <FastForwardIcon />
-                      </IconButton>
-                      {formatTime(positions[index].fixTime, 'seconds')}
-                    </div> 
-  </div> 
-*/}
-  {/* Konec */}
-
-
     </>
   );
 };
