@@ -24,6 +24,7 @@ import MapCamera from '../map/MapCamera';
 import MapMarkers from '../map/MapMarkers';
 import dayjs from 'dayjs';
 import { useMemo } from 'react';
+import { formatTime, formatNumericHours } from '../common/util/formatter';
 
 const MainMap = ({ filteredPositions, selectedPosition, onEventsClick, routePositions = [] }) => {
   const theme = useTheme();
@@ -48,7 +49,8 @@ const MainMap = ({ filteredPositions, selectedPosition, onEventsClick, routePosi
     while (i < routePositions.length) {
       const lat = routePositions[i].latitude;
       const lon = routePositions[i].longitude;
-      const startTime = dayjs(routePositions[i].fixTime).valueOf();
+      const startFix = routePositions[i].fixTime;
+      const startTime = dayjs(startFix).valueOf();
       let j = i + 1;
       while (
         j < routePositions.length &&
@@ -57,9 +59,17 @@ const MainMap = ({ filteredPositions, selectedPosition, onEventsClick, routePosi
       ) {
         j += 1;
       }
-      const endTime = dayjs(routePositions[j - 1].fixTime).valueOf();
-      if (endTime - startTime >= thresholdMs) {
-        markers.push({ latitude: lat, longitude: lon, image: 'default-info' });
+      const endFix = routePositions[j - 1].fixTime;
+      const endTime = dayjs(endFix).valueOf();
+      const durationMs = endTime - startTime;
+      if (durationMs >= thresholdMs) {
+        const durationMinutes = Math.round(durationMs / 60000);
+        const popupHtml = `
+          <div style="min-width:180px">
+            <div><strong>${formatTime(startFix, 'minutes')}</strong> — <strong>${formatTime(endFix, 'minutes')}</strong></div>
+            <div>${formatNumericHours(durationMinutes, null)}</div>
+          </div>`;
+        markers.push({ latitude: lat, longitude: lon, image: 'default-info', popupHtml });
       }
       i = j;
     }
@@ -92,7 +102,7 @@ const MainMap = ({ filteredPositions, selectedPosition, onEventsClick, routePosi
               ]}
             />
             {stopMarkers.length > 0 && (
-              <MapMarkers markers={stopMarkers} />
+              <MapMarkers markers={stopMarkers} enablePopup />
             )}
             <MapCamera positions={routePositions} />
           </>
