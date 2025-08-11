@@ -25,10 +25,12 @@ import MapMarkers from '../map/MapMarkers';
 import dayjs from 'dayjs';
 import { useMemo } from 'react';
 import { formatTime, formatNumericHours } from '../common/util/formatter';
+import { useTranslation } from '../common/components/LocalizationProvider';
 
 const MainMap = ({ filteredPositions, selectedPosition, onEventsClick, routePositions = [] }) => {
   const theme = useTheme();
   const dispatch = useDispatch();
+  const t = useTranslation();
 
   const desktop = useMediaQuery(theme.breakpoints.up('md'));
 
@@ -63,18 +65,17 @@ const MainMap = ({ filteredPositions, selectedPosition, onEventsClick, routePosi
       const endTime = dayjs(endFix).valueOf();
       const durationMs = endTime - startTime;
       if (durationMs >= thresholdMs) {
-        const durationMinutes = Math.round(durationMs / 60000);
         const popupHtml = `
           <div style="min-width:180px">
             <div><strong>${formatTime(startFix, 'minutes')}</strong> — <strong>${formatTime(endFix, 'minutes')}</strong></div>
-            <div>${formatNumericHours(durationMinutes, null)}</div>
+            <div>${formatNumericHours(durationMs, t)}</div>
           </div>`;
         markers.push({ latitude: lat, longitude: lon, image: 'default-info', popupHtml });
       }
       i = j;
     }
     return markers;
-  }, [routePositions]);
+  }, [routePositions, t]);
 
   return (
     <>
