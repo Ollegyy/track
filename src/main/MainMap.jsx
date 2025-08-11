@@ -22,6 +22,8 @@ import MapRoutePath from '../map/MapRoutePath';
 import MapRoutePoints from '../map/MapRoutePoints';
 import MapCamera from '../map/MapCamera';
 import MapMarkers from '../map/MapMarkers';
+import dayjs from 'dayjs';
+import { useMemo } from 'react';
 
 const MainMap = ({ filteredPositions, selectedPosition, onEventsClick, routePositions = [] }) => {
   const theme = useTheme();
@@ -36,6 +38,33 @@ const MainMap = ({ filteredPositions, selectedPosition, onEventsClick, routePosi
   const onMarkerClick = useCallback((_, deviceId) => {
     dispatch(devicesActions.selectId(deviceId));
   }, [dispatch]);
+
+  const stopMarkers = useMemo(() => {
+    const markers = [];
+    if (!routePositions || routePositions.length < 2) return markers;
+
+    const thresholdMs = 5 * 60 * 1000;
+    let i = 0;
+    while (i < routePositions.length) {
+      const lat = routePositions[i].latitude;
+      const lon = routePositions[i].longitude;
+      const startTime = dayjs(routePositions[i].fixTime).valueOf();
+      let j = i + 1;
+      while (
+        j < routePositions.length &&
+        routePositions[j].latitude === lat &&
+        routePositions[j].longitude === lon
+      ) {
+        j += 1;
+      }
+      const endTime = dayjs(routePositions[j - 1].fixTime).valueOf();
+      if (endTime - startTime >= thresholdMs) {
+        markers.push({ latitude: lat, longitude: lon, image: 'default-info' });
+      }
+      i = j;
+    }
+    return markers;
+  }, [routePositions]);
 
   return (
     <>
@@ -62,6 +91,9 @@ const MainMap = ({ filteredPositions, selectedPosition, onEventsClick, routePosi
                 },
               ]}
             />
+            {stopMarkers.length > 0 && (
+              <MapMarkers markers={stopMarkers} />
+            )}
             <MapCamera positions={routePositions} />
           </>
         )}
