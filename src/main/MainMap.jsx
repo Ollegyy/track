@@ -21,6 +21,7 @@ import useFeatures from '../common/util/useFeatures';
 import MapRoutePath from '../map/MapRoutePath';
 import MapRoutePoints from '../map/MapRoutePoints';
 import MapCamera from '../map/MapCamera';
+import MapMarkers from '../map/MapMarkers';
 
 const MainMap = ({ filteredPositions, selectedPosition, onEventsClick, routePositions = [] }) => {
   const theme = useTheme();
@@ -47,6 +48,20 @@ const MainMap = ({ filteredPositions, selectedPosition, onEventsClick, routePosi
           <>
             <MapRoutePath positions={routePositions} />
             <MapRoutePoints positions={routePositions} showSpeedControl />
+            <MapMarkers
+              markers={[
+                {
+                  latitude: routePositions[0].latitude,
+                  longitude: routePositions[0].longitude,
+                  image: 'start-success',
+                },
+                {
+                  latitude: routePositions[routePositions.length - 1].latitude,
+                  longitude: routePositions[routePositions.length - 1].longitude,
+                  image: 'finish-error',
+                },
+              ]}
+            />
             <MapCamera positions={routePositions} />
           </>
         )}
