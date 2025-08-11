@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useTheme } from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { useDispatch, useSelector } from 'react-redux';
@@ -23,14 +23,10 @@ import MapRoutePoints from '../map/MapRoutePoints';
 import MapCamera from '../map/MapCamera';
 import MapMarkers from '../map/MapMarkers';
 import dayjs from 'dayjs';
-import { useMemo } from 'react';
-import { formatTime, formatNumericHours } from '../common/util/formatter';
-import { useTranslation } from '../common/components/LocalizationProvider';
 
 const MainMap = ({ filteredPositions, selectedPosition, onEventsClick, routePositions = [] }) => {
   const theme = useTheme();
   const dispatch = useDispatch();
-  const t = useTranslation();
 
   const desktop = useMediaQuery(theme.breakpoints.up('md'));
 
@@ -49,43 +45,28 @@ const MainMap = ({ filteredPositions, selectedPosition, onEventsClick, routePosi
     const thresholdMs = 5 * 60 * 1000;
     let i = 0;
     while (i < routePositions.length) {
-      const lat = routePositions[i]?.latitude;
-      const lon = routePositions[i]?.longitude;
-      const startFix = routePositions[i]?.fixTime;
-      if (lat == null || lon == null || !startFix) { i += 1; continue; }
+      const lat = routePositions[i].latitude;
+      const lon = routePositions[i].longitude;
+      const startFix = routePositions[i].fixTime;
       const startTime = dayjs(startFix).valueOf();
       let j = i + 1;
       while (
         j < routePositions.length &&
-        routePositions[j]?.latitude === lat &&
-        routePositions[j]?.longitude === lon
+        routePositions[j].latitude === lat &&
+        routePositions[j].longitude === lon
       ) {
         j += 1;
       }
-      const endFix = routePositions[j - 1]?.fixTime;
-      if (!endFix) { i = j; continue; }
+      const endFix = routePositions[j - 1].fixTime;
       const endTime = dayjs(endFix).valueOf();
       const durationMs = endTime - startTime;
       if (durationMs >= thresholdMs) {
-        let durationLabel;
-        try {
-          durationLabel = formatNumericHours(durationMs, t);
-        } catch (e) {
-          const hours = Math.floor(durationMs / 3600000);
-          const minutes = Math.floor((durationMs % 3600000) / 60000);
-          durationLabel = `${hours} h ${minutes} min`;
-        }
-        const popupHtml = `
-          <div style="min-width:180px">
-            <div><strong>${formatTime(startFix, 'minutes')}</strong> — <strong>${formatTime(endFix, 'minutes')}</strong></div>
-            <div>${durationLabel}</div>
-          </div>`;
-        markers.push({ latitude: lat, longitude: lon, image: 'default-info', popupHtml });
+        markers.push({ latitude: lat, longitude: lon, image: 'default-info' });
       }
       i = j;
     }
     return markers;
-  }, [routePositions, t]);
+  }, [routePositions]);
 
   return (
     <>
@@ -113,7 +94,7 @@ const MainMap = ({ filteredPositions, selectedPosition, onEventsClick, routePosi
               ]}
             />
             {stopMarkers.length > 0 && (
-              <MapMarkers markers={stopMarkers} enablePopup />
+              <MapMarkers markers={stopMarkers} />
             )}
             <MapCamera positions={routePositions} />
           </>

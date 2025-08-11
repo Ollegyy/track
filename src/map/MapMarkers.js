@@ -4,9 +4,8 @@ import { useMediaQuery } from '@mui/material';
 import { map } from './core/MapView';
 import { useAttributePreference } from '../common/util/preferences';
 import { findFonts } from './core/mapUtil';
-import maplibregl from 'maplibre-gl';
 
-const MapMarkers = ({ markers, showTitles, enablePopup }) => {
+const MapMarkers = ({ markers, showTitles }) => {
   const id = useId();
 
   const theme = useTheme();
@@ -57,30 +56,7 @@ const MapMarkers = ({ markers, showTitles, enablePopup }) => {
       });
     }
 
-    let popup;
-    const onClick = (event) => {
-      if (!enablePopup) return;
-      const feature = event.features?.[0];
-      if (!feature) return;
-      const coordinates = feature.geometry.coordinates.slice();
-      const html = feature.properties?.popupHtml;
-      if (!html) return;
-      if (popup) popup.remove();
-      popup = new maplibregl.Popup({ closeOnClick: true, closeOnMove: true })
-        .setLngLat(coordinates)
-        .setHTML(html)
-        .addTo(map);
-    };
-
-    if (enablePopup) {
-      map.on('click', id, onClick);
-    }
-
     return () => {
-      if (enablePopup) {
-        map.off('click', id, onClick);
-      }
-      if (popup) popup.remove();
       if (map.getLayer(id)) {
         map.removeLayer(id);
       }
@@ -88,12 +64,12 @@ const MapMarkers = ({ markers, showTitles, enablePopup }) => {
         map.removeSource(id);
       }
     };
-  }, [showTitles, enablePopup]);
+  }, [showTitles]);
 
   useEffect(() => {
     map.getSource(id)?.setData({
       type: 'FeatureCollection',
-      features: markers.map(({ latitude, longitude, image, title, popupHtml }) => ({
+      features: markers.map(({ latitude, longitude, image, title }) => ({
         type: 'Feature',
         geometry: {
           type: 'Point',
@@ -102,7 +78,6 @@ const MapMarkers = ({ markers, showTitles, enablePopup }) => {
         properties: {
           image: image || 'default-neutral',
           title: title || '',
-          popupHtml: popupHtml || '',
         },
       })),
     });
