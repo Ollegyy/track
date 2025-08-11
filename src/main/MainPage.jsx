@@ -91,6 +91,7 @@ const MainPage = () => {
   const [eventsOpen, setEventsOpen] = useState(false);
 
   const [routePositions, setRoutePositions] = useState([]);
+  const [dailyDistanceMeters, setDailyDistanceMeters] = useState(null);
 
   const onEventsClick = useCallback(() => setEventsOpen(true), [setEventsOpen]);
 
@@ -124,6 +125,24 @@ const MainPage = () => {
     })();
     return () => controller.abort();
   }, [selectedDeviceId]);
+
+  useEffect(() => {
+    if (routePositions && routePositions.length >= 2) {
+      const first = routePositions[0];
+      const last = routePositions[routePositions.length - 1];
+      const firstTotal = first?.attributes?.totalDistance;
+      const lastTotal = last?.attributes?.totalDistance;
+      let distance = null;
+      if (typeof firstTotal === 'number' && typeof lastTotal === 'number' && lastTotal >= firstTotal) {
+        distance = lastTotal - firstTotal;
+      } else {
+        distance = routePositions.reduce((sum, p) => sum + (typeof p?.attributes?.distance === 'number' ? p.attributes.distance : 0), 0);
+      }
+      setDailyDistanceMeters(distance);
+    } else {
+      setDailyDistanceMeters(null);
+    }
+  }, [routePositions]);
 
   useFilter(keyword, filter, filterSort, filterMap, positions, setFilteredDevices, setFilteredPositions);
 
@@ -181,6 +200,7 @@ const MainPage = () => {
           position={selectedPosition}
           onClose={() => dispatch(devicesActions.selectId(null))}
           desktopPadding={theme.dimensions.drawerWidthDesktop}
+          dailyDistanceMeters={dailyDistanceMeters}
         />
       )}
     </div>

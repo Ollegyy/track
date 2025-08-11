@@ -35,6 +35,7 @@ import usePositionAttributes from '../attributes/usePositionAttributes';
 import { devicesActions } from '../../store';
 import { useCatch, useCatchCallback } from '../../reactHelper';
 import { useAttributePreference } from '../util/preferences';
+import { formatDistance } from '../util/formatter';
 
 const useStyles = makeStyles()((theme, { desktopPadding }) => ({
   card: {
@@ -115,7 +116,7 @@ const StatusRow = ({ name, content }) => {
   );
 };
 
-const StatusCard = ({ deviceId, position, onClose, disableActions, desktopPadding = 0 }) => {
+const StatusCard = ({ deviceId, position, onClose, disableActions, desktopPadding = 0, dailyDistanceMeters }) => {
   const { classes } = useStyles({ desktopPadding });
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -127,6 +128,8 @@ const StatusCard = ({ deviceId, position, onClose, disableActions, desktopPaddin
   const shareDisabled = useSelector((state) => state.session.server.attributes.disableShare);
   const user = useSelector((state) => state.session.user);
   const device = useSelector((state) => state.devices.items[deviceId]);
+
+  const distanceUnit = useAttributePreference('distanceUnit');
 
   const deviceImage = device?.attributes?.deviceImage;
 
@@ -233,6 +236,12 @@ const StatusCard = ({ deviceId, position, onClose, disableActions, desktopPaddin
                           )}
                         />
                       ))}
+                      {typeof dailyDistanceMeters === 'number' && (
+                        <StatusRow
+                          name={t('sharedDistance')}
+                          content={formatDistance(dailyDistanceMeters, distanceUnit, t)}
+                        />
+                      )}
 
                     </TableBody>
                     <TableFooter>
