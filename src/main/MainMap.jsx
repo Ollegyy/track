@@ -49,26 +49,36 @@ const MainMap = ({ filteredPositions, selectedPosition, onEventsClick, routePosi
     const thresholdMs = 5 * 60 * 1000;
     let i = 0;
     while (i < routePositions.length) {
-      const lat = routePositions[i].latitude;
-      const lon = routePositions[i].longitude;
-      const startFix = routePositions[i].fixTime;
+      const lat = routePositions[i]?.latitude;
+      const lon = routePositions[i]?.longitude;
+      const startFix = routePositions[i]?.fixTime;
+      if (lat == null || lon == null || !startFix) { i += 1; continue; }
       const startTime = dayjs(startFix).valueOf();
       let j = i + 1;
       while (
         j < routePositions.length &&
-        routePositions[j].latitude === lat &&
-        routePositions[j].longitude === lon
+        routePositions[j]?.latitude === lat &&
+        routePositions[j]?.longitude === lon
       ) {
         j += 1;
       }
-      const endFix = routePositions[j - 1].fixTime;
+      const endFix = routePositions[j - 1]?.fixTime;
+      if (!endFix) { i = j; continue; }
       const endTime = dayjs(endFix).valueOf();
       const durationMs = endTime - startTime;
       if (durationMs >= thresholdMs) {
+        let durationLabel;
+        try {
+          durationLabel = formatNumericHours(durationMs, t);
+        } catch (e) {
+          const hours = Math.floor(durationMs / 3600000);
+          const minutes = Math.floor((durationMs % 3600000) / 60000);
+          durationLabel = `${hours} h ${minutes} min`;
+        }
         const popupHtml = `
           <div style="min-width:180px">
             <div><strong>${formatTime(startFix, 'minutes')}</strong> — <strong>${formatTime(endFix, 'minutes')}</strong></div>
-            <div>${formatNumericHours(durationMs, t)}</div>
+            <div>${durationLabel}</div>
           </div>`;
         markers.push({ latitude: lat, longitude: lon, image: 'default-info', popupHtml });
       }
