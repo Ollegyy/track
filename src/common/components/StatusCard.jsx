@@ -214,7 +214,7 @@ const StatusCard = ({ deviceId, position, onClose, disableActions, desktopPaddin
                     </Typography>
                     {typeof dailyDistanceMeters === 'number' && (
                       <Typography variant="body2">
-                        <StraightenIcon fontSize="inherit" style={{ verticalAlign: 'middle', marginRight: 4 }} />
+                        <StraightenIcon fontSize="inherit" style={{ verticalAlign: 'middle', marginRight: 4, transform: 'rotate(45deg)', display: 'inline-block' }} />
                         {formatDistance(dailyDistanceMeters, distanceUnit, t)}
                       </Typography>
                     )}
