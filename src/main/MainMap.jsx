@@ -43,17 +43,30 @@ const MainMap = ({ filteredPositions, selectedPosition, onEventsClick, routePosi
     if (!routePositions || routePositions.length < 2) return markers;
 
     const thresholdMs = 5 * 60 * 1000;
+    const thresholdDistanceM = 10; // tolerance for GPS jitter
+
+    const toRad = (deg) => (deg * Math.PI) / 180;
+    const distanceMeters = (lat1, lon1, lat2, lon2) => {
+      const R = 6371000;
+      const dLat = toRad(lat2 - lat1);
+      const dLon = toRad(lon2 - lon1);
+      const a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
+        + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2))
+        * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      return R * c;
+    };
+
     let i = 0;
     while (i < routePositions.length) {
-      const lat = routePositions[i].latitude;
-      const lon = routePositions[i].longitude;
+      const anchorLat = routePositions[i].latitude;
+      const anchorLon = routePositions[i].longitude;
       const startFix = routePositions[i].fixTime;
       const startTime = dayjs(startFix).valueOf();
       let j = i + 1;
       while (
         j < routePositions.length &&
-        routePositions[j].latitude === lat &&
-        routePositions[j].longitude === lon
+        distanceMeters(routePositions[j].latitude, routePositions[j].longitude, anchorLat, anchorLon) <= thresholdDistanceM
       ) {
         j += 1;
       }
@@ -61,7 +74,7 @@ const MainMap = ({ filteredPositions, selectedPosition, onEventsClick, routePosi
       const endTime = dayjs(endFix).valueOf();
       const durationMs = endTime - startTime;
       if (durationMs >= thresholdMs) {
-        markers.push({ latitude: lat, longitude: lon, image: 'default-info' });
+        markers.push({ latitude: anchorLat, longitude: anchorLon, image: 'default-info' });
       }
       i = j;
     }
