@@ -226,13 +226,13 @@ const StatusCard = ({ deviceId, position, onClose, disableActions, desktopPaddin
                     size="small"
                     onClick={onClose}
                     onTouchStart={onClose}
-                  >
+> 
                     <CloseIcon fontSize="small" />
                   </IconButton>
                 </div>
-                <div style={{ height: 1 }} />
-              )}
-              {position && (
+                 <div style={{ height: 1, width: '100%', backgroundColor: '#e0e0e0' }} />
+               )}
+               {position && (
                 <CardContent className={classes.content}>
                   <Table size="small" classes={{ root: classes.table }}>
                     <TableBody>
