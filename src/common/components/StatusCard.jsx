@@ -26,6 +26,7 @@ import PublishIcon from '@mui/icons-material/Publish';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import PendingIcon from '@mui/icons-material/Pending';
+import StraightenIcon from '@mui/icons-material/Straighten';
 
 import { useTranslation } from './LocalizationProvider';
 import RemoveDialog from './RemoveDialog';
@@ -213,6 +214,7 @@ const StatusCard = ({ deviceId, position, onClose, disableActions, desktopPaddin
                     </Typography>
                     {typeof dailyDistanceMeters === 'number' && (
                       <Typography variant="body2">
+                        <StraightenIcon fontSize="inherit" style={{ verticalAlign: 'middle', marginRight: 4 }} />
                         {formatDistance(dailyDistanceMeters, distanceUnit, t)}
                       </Typography>
                     )}
