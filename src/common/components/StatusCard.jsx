@@ -207,7 +207,7 @@ const StatusCard = ({ deviceId, position, onClose, disableActions, desktopPaddin
                 </CardMedia>
               ) : (
                 <div className={`${classes.header} draggable-header`}>
-                  <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                     <Typography variant="body2" color="textSecondary">
                       {device.name}
                     </Typography>
