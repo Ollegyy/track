@@ -18,7 +18,6 @@ import {
   TableFooter,
   Link,
   Tooltip,
-  Divider,
 } from '@mui/material';
 import { makeStyles } from 'tss-react/mui';
 import CloseIcon from '@mui/icons-material/Close';
@@ -231,7 +230,7 @@ const StatusCard = ({ deviceId, position, onClose, disableActions, desktopPaddin
                     <CloseIcon fontSize="small" />
                   </IconButton>
                 </div>
-                <Divider />
+                <div style={{ height: 1 }} />
               )}
               {position && (
                 <CardContent className={classes.content}>
