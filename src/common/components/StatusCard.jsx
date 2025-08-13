@@ -207,9 +207,16 @@ const StatusCard = ({ deviceId, position, onClose, disableActions, desktopPaddin
                 </CardMedia>
               ) : (
                 <div className={`${classes.header} draggable-header`}>
-                  <Typography variant="body2" color="textSecondary">
-                    {device.name}
-                  </Typography>
+                  <div>
+                    <Typography variant="body2" color="textSecondary">
+                      {device.name}
+                    </Typography>
+                    {typeof dailyDistanceMeters === 'number' && (
+                      <Typography variant="body2">
+                        {formatDistance(dailyDistanceMeters, distanceUnit, t)}
+                      </Typography>
+                    )}
+                  </div>
                   <IconButton
                     size="small"
                     onClick={onClose}
@@ -236,12 +243,6 @@ const StatusCard = ({ deviceId, position, onClose, disableActions, desktopPaddin
                           )}
                         />
                       ))}
-                      {typeof dailyDistanceMeters === 'number' && (
-                        <StatusRow
-                          name={t('sharedDistance')}
-                          content={formatDistance(dailyDistanceMeters, distanceUnit, t)}
-                        />
-                      )}
 
                     </TableBody>
                     <TableFooter>
