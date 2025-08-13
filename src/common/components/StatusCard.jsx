@@ -18,6 +18,7 @@ import {
   TableFooter,
   Link,
   Tooltip,
+  Divider,
 } from '@mui/material';
 import { makeStyles } from 'tss-react/mui';
 import CloseIcon from '@mui/icons-material/Close';
@@ -213,10 +214,13 @@ const StatusCard = ({ deviceId, position, onClose, disableActions, desktopPaddin
                       {device.name}
                     </Typography>
                     {typeof dailyDistanceMeters === 'number' && (
-                      <Typography variant="body2">
-                        <StraightenIcon fontSize="inherit" style={{ verticalAlign: 'middle', marginRight: 4, transform: 'rotate(45deg)', display: 'inline-block' }} />
-                        {formatDistance(dailyDistanceMeters, distanceUnit, t)}
-                      </Typography>
+                      <>
+                        <Typography variant="body2" color="textSecondary">|</Typography>
+                        <Typography variant="body2">
+                          <StraightenIcon fontSize="inherit" style={{ verticalAlign: 'middle', marginRight: 4, transform: 'rotate(45deg)', display: 'inline-block' }} />
+                          {formatDistance(dailyDistanceMeters, distanceUnit, t)}
+                        </Typography>
+                      </>
                     )}
                   </div>
                   <IconButton
@@ -227,6 +231,7 @@ const StatusCard = ({ deviceId, position, onClose, disableActions, desktopPaddin
                     <CloseIcon fontSize="small" />
                   </IconButton>
                 </div>
+                <Divider />
               )}
               {position && (
                 <CardContent className={classes.content}>
