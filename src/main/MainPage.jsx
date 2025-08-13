@@ -128,16 +128,9 @@ const MainPage = () => {
 
   useEffect(() => {
     if (routePositions && routePositions.length >= 2) {
-      const first = routePositions[0];
-      const last = routePositions[routePositions.length - 1];
-      const firstTotal = first?.attributes?.totalDistance;
-      const lastTotal = last?.attributes?.totalDistance;
-      let distance = null;
-      if (typeof firstTotal === 'number' && typeof lastTotal === 'number' && lastTotal >= firstTotal) {
-        distance = lastTotal - firstTotal;
-      } else {
-        distance = routePositions.reduce((sum, p) => sum + (typeof p?.attributes?.distance === 'number' ? p.attributes.distance : 0), 0);
-      }
+      const distance = routePositions.reduce((sum, p) => (
+        typeof p?.attributes?.distance === 'number' ? sum + p.attributes.distance : sum
+      ), 0);
       setDailyDistanceMeters(distance);
     } else {
       setDailyDistanceMeters(null);
