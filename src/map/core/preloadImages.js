@@ -83,6 +83,9 @@ export default async () => {
     ['info', 'success', 'error', 'neutral'].forEach((color) => {
       results.push(loadImage(mapIcons[category]).then((icon) => {
         mapImages[`${category}-${color}`] = prepareIcon(background, icon, theme.palette[color].main);
+        if (category === 'parking') {
+          mapImages[`${category}-nb-${color}`] = prepareIcon(null, icon, theme.palette[color].main);
+        }
       }));
     });
     await Promise.all(results);
