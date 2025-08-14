@@ -50,8 +50,9 @@ export const prepareIcon = (background, icon, color) => {
     const iconRatio = background ? 0.5 : 1; // fill full canvas if no background
     const imageWidth = canvas.width * iconRatio;
     const imageHeight = canvas.height * iconRatio;
+    const source = color ? canvasTintImage(icon, color) : icon;
     context.drawImage(
-      canvasTintImage(icon, color || '#000'),
+      source,
       (canvas.width - imageWidth) / 2,
       (canvas.height - imageHeight) / 2,
       imageWidth,
