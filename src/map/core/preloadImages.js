@@ -90,4 +90,6 @@ export default async () => {
     });
     await Promise.all(results);
   }));
+  // Raw untinted, no background variant for parking icon (original file as-is)
+  mapImages['parking-raw'] = await loadImage(parkingPng);
 };

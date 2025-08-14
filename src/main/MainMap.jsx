@@ -74,7 +74,7 @@ const MainMap = ({ filteredPositions, selectedPosition, onEventsClick, routePosi
       const endTime = dayjs(endFix).valueOf();
       const durationMs = endTime - startTime;
       if (durationMs >= thresholdMs) {
-        markers.push({ latitude: anchorLat, longitude: anchorLon, image: 'parking-info' });
+        markers.push({ latitude: anchorLat, longitude: anchorLon, image: 'parking-raw' });
       }
       i = j;
     }
