@@ -26,7 +26,7 @@ import trainSvg from '../../resources/images/icon/train.svg';
 import tramSvg from '../../resources/images/icon/tram.svg';
 import truckSvg from '../../resources/images/icon/truck.svg';
 import vanSvg from '../../resources/images/icon/van.svg';
-import parkingSvg from '../../resources/images/icon/parking.svg';
+import parkingPng from '../../resources/images/icon/parking.png';
 
 export const mapIcons = {
   animal: animalSvg,
@@ -51,7 +51,7 @@ export const mapIcons = {
   tram: tramSvg,
   truck: truckSvg,
   van: vanSvg,
-  parking: parkingSvg,
+  parking: parkingPng,
 };
 
 export const mapIconKey = (category) => {
