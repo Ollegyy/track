@@ -26,6 +26,7 @@ import dayjs from 'dayjs';
 import { formatNumericHours } from '../common/util/formatter';
 import { useTranslation } from '../common/components/LocalizationProvider';
 import { MeasureControl } from '../map/measure/MeasureControl';
+import MapMeasure from '../map/measure/MapMeasure';
 
 const MainMap = ({ filteredPositions, selectedPosition, onEventsClick, routePositions = [] }) => {
   const theme = useTheme();
@@ -146,6 +147,7 @@ const MainMap = ({ filteredPositions, selectedPosition, onEventsClick, routePosi
       <MapScale />
       <MapCurrentLocation />
       <MapGeocoder />
+      <MapMeasure />
       {!features.disableEvents && (
         <MapNotification enabled={eventsAvailable} onClick={onEventsClick} />
       )}
