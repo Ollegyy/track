@@ -23,7 +23,7 @@ import MapRoutePoints from '../map/MapRoutePoints';
 import MapCamera from '../map/MapCamera';
 import MapMarkers from '../map/MapMarkers';
 import dayjs from 'dayjs';
-import { formatTime, formatNumericHours } from '../common/util/formatter';
+import { formatNumericHours } from '../common/util/formatter';
 import { useTranslation } from '../common/components/LocalizationProvider';
 
 const MainMap = ({ filteredPositions, selectedPosition, onEventsClick, routePositions = [] }) => {
@@ -60,6 +60,8 @@ const MainMap = ({ filteredPositions, selectedPosition, onEventsClick, routePosi
       return R * c;
     };
 
+    const formatHM = (iso) => new Date(iso).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+
     let i = 0;
     while (i < routePositions.length) {
       const anchorLat = routePositions[i].latitude;
@@ -77,11 +79,7 @@ const MainMap = ({ filteredPositions, selectedPosition, onEventsClick, routePosi
       const endTime = dayjs(endFix).valueOf();
       const durationMs = endTime - startTime;
       if (durationMs >= thresholdMs) {
-        const popupHtml = `
-          <div style="min-width:180px">
-            <div><strong>${formatTime(startFix, 'minutes')}</strong> — <strong>${formatTime(endFix, 'minutes')}</strong></div>
-            <div>${formatNumericHours(durationMs, t)}</div>
-          </div>`;
+        const popupHtml = `<div><div><strong>${formatHM(startFix)}</strong> — <strong>${formatHM(endFix)}</strong></div><div>${formatNumericHours(durationMs, t)}</div></div>`;
         markers.push({ latitude: anchorLat, longitude: anchorLon, image: 'parking-raw', popupHtml, sFix: startFix, eFix: endFix, dMs: durationMs });
       }
       i = j;
