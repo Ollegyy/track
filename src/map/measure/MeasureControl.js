@@ -19,12 +19,17 @@ export class MeasureControl {
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.title = 'Измерить расстояние';
-    btn.style.width = '32px';
-    btn.style.height = '32px';
+    btn.style.width = '28px';
+    btn.style.height = '28px';
+    btn.style.padding = '0';
+    btn.style.lineHeight = '28px';
+    btn.style.fontSize = '16px';
     btn.style.border = 'none';
     btn.style.background = '#fff';
     btn.style.borderRadius = '4px';
-    btn.style.boxShadow = '0 1px 4px rgba(0,0,0,0.3)';
+    btn.style.display = 'flex';
+    btn.style.alignItems = 'center';
+    btn.style.justifyContent = 'center';
     btn.style.cursor = 'pointer';
     btn.innerText = '📏';
     btn.onclick = () => this.toggle();
@@ -111,7 +116,6 @@ export class MeasureControl {
   }
 
   _finish() {
-    // End measuring; keep the drawing, or deactivate to clear
     this._deactivate();
   }
 
@@ -142,7 +146,6 @@ export class MeasureControl {
     }
     map.getSource(this._sourceId)?.setData(lineFC);
 
-    // Build labels: per-segment lengths and total at the end
     const labelFeatures = [];
     let totalMeters = 0;
     for (let i = 1; i < coords.length; i += 1) {
