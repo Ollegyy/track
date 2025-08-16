@@ -63,7 +63,19 @@ const MapMarkers = ({ markers, showTitles, enablePopup }) => {
       const feature = event.features?.[0];
       if (!feature) return;
       const coordinates = feature.geometry.coordinates.slice();
-      const html = feature.properties?.popupHtml;
+      let html = feature.properties?.popupHtml;
+      if (!html) {
+        const sFix = feature.properties?.sFix;
+        const eFix = feature.properties?.eFix;
+        const dMs = feature.properties?.dMs;
+        if (sFix && eFix && dMs != null) {
+          // Build a basic fallback content; times are raw ISO here
+          html = `<div style="min-width:180px">
+            <div><strong>${sFix}</strong> — <strong>${eFix}</strong></div>
+            <div>${Math.floor(dMs / 60000)} min</div>
+          </div>`;
+        }
+      }
       if (!html) return;
       if (popup) popup.remove();
       popup = new maplibregl.Popup({ closeOnClick: true, closeOnMove: true })
@@ -93,7 +105,7 @@ const MapMarkers = ({ markers, showTitles, enablePopup }) => {
   useEffect(() => {
     map.getSource(id)?.setData({
       type: 'FeatureCollection',
-      features: markers.map(({ latitude, longitude, image, title, popupHtml }) => ({
+      features: markers.map(({ latitude, longitude, image, title, popupHtml, sFix, eFix, dMs }) => ({
         type: 'Feature',
         geometry: {
           type: 'Point',
@@ -103,6 +115,9 @@ const MapMarkers = ({ markers, showTitles, enablePopup }) => {
           image: image || 'default-neutral',
           title: title || '',
           popupHtml: popupHtml || '',
+          sFix: sFix || '',
+          eFix: eFix || '',
+          dMs: dMs != null ? dMs : '',
         },
       })),
     });

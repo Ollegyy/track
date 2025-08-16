@@ -82,7 +82,7 @@ const MainMap = ({ filteredPositions, selectedPosition, onEventsClick, routePosi
             <div><strong>${formatTime(startFix, 'minutes')}</strong> — <strong>${formatTime(endFix, 'minutes')}</strong></div>
             <div>${formatNumericHours(durationMs, t)}</div>
           </div>`;
-        markers.push({ latitude: anchorLat, longitude: anchorLon, image: 'parking-raw', popupHtml });
+        markers.push({ latitude: anchorLat, longitude: anchorLon, image: 'parking-raw', popupHtml, sFix: startFix, eFix: endFix, dMs: durationMs });
       }
       i = j;
     }
