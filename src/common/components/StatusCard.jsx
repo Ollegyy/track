@@ -89,16 +89,13 @@ const useStyles = makeStyles()((theme, { desktopPadding }) => ({
     pointerEvents: 'none',
     position: 'fixed',
     zIndex: 5,
-    left: '50%',
+    right: theme.spacing(3),
     [theme.breakpoints.up('md')]: {
-      left: `calc(50% + ${desktopPadding} / 2)`,
       bottom: theme.spacing(3),
     },
     [theme.breakpoints.down('md')]: {
-      left: '50%',
       bottom: `calc(${theme.spacing(3)} + ${theme.dimensions.bottomBarHeight}px)`,
     },
-    transform: 'translateX(-50%)',
   },
 }));
 
