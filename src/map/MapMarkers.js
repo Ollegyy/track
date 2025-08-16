@@ -60,7 +60,8 @@ const MapMarkers = ({ markers, showTitles, enablePopup }) => {
     let popup;
     const onClick = (event) => {
       if (!enablePopup) return;
-      const feature = event.features?.[0];
+      const features = map.queryRenderedFeatures(event.point, { layers: [id] });
+      const feature = features && features[0];
       if (!feature) return;
       const coordinates = feature.geometry.coordinates.slice();
       let html = feature.properties?.popupHtml;
@@ -69,7 +70,6 @@ const MapMarkers = ({ markers, showTitles, enablePopup }) => {
         const eFix = feature.properties?.eFix;
         const dMs = feature.properties?.dMs;
         if (sFix && eFix && dMs != null) {
-          // Build a basic fallback content; times are raw ISO here
           html = `<div style="min-width:180px">
             <div><strong>${sFix}</strong> — <strong>${eFix}</strong></div>
             <div>${Math.floor(dMs / 60000)} min</div>
