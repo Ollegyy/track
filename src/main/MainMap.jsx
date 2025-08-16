@@ -25,6 +25,7 @@ import MapMarkers from '../map/MapMarkers';
 import dayjs from 'dayjs';
 import { formatNumericHours } from '../common/util/formatter';
 import { useTranslation } from '../common/components/LocalizationProvider';
+import { MeasureControl } from '../map/measure/MeasureControl';
 
 const MainMap = ({ filteredPositions, selectedPosition, onEventsClick, routePositions = [] }) => {
   const theme = useTheme();
