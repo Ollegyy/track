@@ -26,6 +26,7 @@ import trainSvg from '../../resources/images/icon/train.svg';
 import tramSvg from '../../resources/images/icon/tram.svg';
 import truckSvg from '../../resources/images/icon/truck.svg';
 import vanSvg from '../../resources/images/icon/van.svg';
+import parkingPng from '../../resources/images/icon/parking.png';
 
 export const mapIcons = {
   animal: animalSvg,
@@ -50,6 +51,7 @@ export const mapIcons = {
   tram: tramSvg,
   truck: truckSvg,
   van: vanSvg,
+  parking: parkingPng,
 };
 
 export const mapIconKey = (category) => {
@@ -81,8 +83,14 @@ export default async () => {
     ['info', 'success', 'error', 'neutral'].forEach((color) => {
       results.push(loadImage(mapIcons[category]).then((icon) => {
         mapImages[`${category}-${color}`] = prepareIcon(background, icon, theme.palette[color].main);
+        if (category === 'parking') {
+          mapImages[`${category}-nb-${color}`] = prepareIcon(null, icon, theme.palette[color].main);
+        }
       }));
     });
     await Promise.all(results);
   }));
+  // Raw untinted, no background variant for parking icon (original file as-is)
+  const parkingImg = await loadImage(parkingPng);
+  mapImages['parking-raw'] = prepareIcon(null, parkingImg);
 };
