@@ -1,5 +1,4 @@
 import maplibregl from 'maplibre-gl';
-import mapboxgl from 'maplibre-gl';
 
 export class MeasureControl {
   constructor(onToggle) {
