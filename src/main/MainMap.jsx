@@ -79,7 +79,19 @@ const MainMap = ({ filteredPositions, selectedPosition, onEventsClick, routePosi
       const endTime = dayjs(endFix).valueOf();
       const durationMs = endTime - startTime;
       if (durationMs >= thresholdMs) {
-        const popupHtml = `<div><div><strong>${formatHM(startFix)}</strong> — <strong>${formatHM(endFix)}</strong></div><div>${formatNumericHours(durationMs, t)}</div></div>`;
+        const popupHtml = `
+<div style="text-align:center; line-height:1.2;">
+  <div style="display:flex; align-items:center; justify-content:center; gap:6px;">
+    <span style="font-size:14px;">🕒</span>
+    <strong>${formatHM(startFix)}</strong>
+    <span>—</span>
+    <strong>${formatHM(endFix)}</strong>
+  </div>
+  <div style="margin-top:4px; display:flex; align-items:center; justify-content:center; gap:6px;">
+    <span style="font-size:14px;">⏱️</span>
+    <span>${formatNumericHours(durationMs, t)}</span>
+  </div>
+</div>`;
         markers.push({ latitude: anchorLat, longitude: anchorLon, image: 'parking-raw', popupHtml, sFix: startFix, eFix: endFix, dMs: durationMs });
       }
       i = j;
