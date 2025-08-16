@@ -81,6 +81,8 @@ const MapMarkers = ({ markers, showTitles, enablePopup }) => {
       container.style.padding = '8px';
       container.style.color = '#000';
       container.style.font = '12px sans-serif';
+      container.style.border = '1px solid #1976d2';
+      container.style.borderRadius = '6px';
       container.innerHTML = html;
       popup = new maplibregl.Popup({ closeOnClick: true, closeOnMove: true })
         .setLngLat(coordinates)
