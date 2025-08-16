@@ -62,6 +62,7 @@ const MapMarkers = ({ markers, showTitles, enablePopup }) => {
       if (!enablePopup) return;
       const features = map.queryRenderedFeatures(event.point, { layers: [id] });
       const feature = features && features[0];
+      console.log('MapMarkers click', { layerId: id, features, featureProps: feature?.properties });
       if (!feature) return;
       const coordinates = feature.geometry.coordinates.slice();
       let html = feature.properties?.popupHtml;
@@ -76,6 +77,7 @@ const MapMarkers = ({ markers, showTitles, enablePopup }) => {
           </div>`;
         }
       }
+      console.log('MapMarkers popup content', { hasHtml: !!html, html, coords: coordinates });
       if (!html) return;
       if (popup) popup.remove();
       popup = new maplibregl.Popup({ closeOnClick: true, closeOnMove: true })
@@ -103,6 +105,7 @@ const MapMarkers = ({ markers, showTitles, enablePopup }) => {
   }, [showTitles, enablePopup]);
 
   useEffect(() => {
+    console.log('MapMarkers setData', { layerId: id, markerCount: markers?.length || 0, sample: markers && markers[0] });
     map.getSource(id)?.setData({
       type: 'FeatureCollection',
       features: markers.map(({ latitude, longitude, image, title, popupHtml, sFix, eFix, dMs }) => ({
