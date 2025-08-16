@@ -71,18 +71,20 @@ const MapMarkers = ({ markers, showTitles, enablePopup }) => {
         const eFix = feature.properties?.eFix;
         const dMs = feature.properties?.dMs;
         if (sFix && eFix && dMs != null) {
-          html = `<div style="min-width:180px">
-            <div><strong>${sFix}</strong> — <strong>${eFix}</strong></div>
-            <div>${Math.floor(dMs / 60000)} min</div>
-          </div>`;
+          html = `<div><div><strong>${sFix}</strong> — <strong>${eFix}</strong></div><div>${Math.floor(dMs / 60000)} min</div></div>`;
         }
       }
       console.log('MapMarkers popup content', { hasHtml: !!html, html, coords: coordinates });
       if (!html) return;
       if (popup) popup.remove();
+      const container = document.createElement('div');
+      container.style.padding = '8px';
+      container.style.color = '#000';
+      container.style.font = '12px sans-serif';
+      container.innerHTML = html;
       popup = new maplibregl.Popup({ closeOnClick: true, closeOnMove: true })
         .setLngLat(coordinates)
-        .setHTML(html)
+        .setDOMContent(container)
         .addTo(map);
     };
 
