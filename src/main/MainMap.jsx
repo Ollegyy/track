@@ -23,10 +23,13 @@ import MapRoutePoints from '../map/MapRoutePoints';
 import MapCamera from '../map/MapCamera';
 import MapMarkers from '../map/MapMarkers';
 import dayjs from 'dayjs';
+import { formatTime, formatNumericHours } from '../common/util/formatter';
+import { useTranslation } from '../common/components/LocalizationProvider';
 
 const MainMap = ({ filteredPositions, selectedPosition, onEventsClick, routePositions = [] }) => {
   const theme = useTheme();
   const dispatch = useDispatch();
+  const t = useTranslation();
 
   const desktop = useMediaQuery(theme.breakpoints.up('md'));
 
@@ -74,12 +77,17 @@ const MainMap = ({ filteredPositions, selectedPosition, onEventsClick, routePosi
       const endTime = dayjs(endFix).valueOf();
       const durationMs = endTime - startTime;
       if (durationMs >= thresholdMs) {
-        markers.push({ latitude: anchorLat, longitude: anchorLon, image: 'parking-raw' });
+        const popupHtml = `
+          <div style="min-width:180px">
+            <div><strong>${formatTime(startFix, 'minutes')}</strong> — <strong>${formatTime(endFix, 'minutes')}</strong></div>
+            <div>${formatNumericHours(durationMs, t)}</div>
+          </div>`;
+        markers.push({ latitude: anchorLat, longitude: anchorLon, image: 'parking-raw', popupHtml });
       }
       i = j;
     }
     return markers;
-  }, [routePositions]);
+  }, [routePositions, t]);
 
   return (
     <>
@@ -107,7 +115,7 @@ const MainMap = ({ filteredPositions, selectedPosition, onEventsClick, routePosi
               ]}
             />
             {stopMarkers.length > 0 && (
-              <MapMarkers markers={stopMarkers} />
+              <MapMarkers markers={stopMarkers} enablePopup />
             )}
             <MapCamera positions={routePositions} />
           </>
