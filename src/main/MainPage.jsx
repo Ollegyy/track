@@ -17,6 +17,9 @@ import MainToolbar from './MainToolbar';
 import MainMap from './MainMap';
 import { useAttributePreference } from '../common/util/preferences';
 import dayjs from 'dayjs';
+import booleanPointInPolygon from '@turf/boolean-point-in-polygon';
+import { point } from '@turf/helpers';
+import { geofenceToFeature } from '../map/core/mapUtil';
 
 const useStyles = makeStyles()((theme) => ({
   root: {
@@ -74,6 +77,7 @@ const MainPage = () => {
 
   const selectedDeviceId = useSelector((state) => state.devices.selectedId);
   const positions = useSelector((state) => state.session.positions);
+  const geofences = useSelector((state) => state.geofences.items);
   const [filteredPositions, setFilteredPositions] = useState([]);
   const selectedPosition = filteredPositions.find((position) => selectedDeviceId && position.deviceId === selectedDeviceId);
 
@@ -128,14 +132,31 @@ const MainPage = () => {
 
   useEffect(() => {
     if (routePositions && routePositions.length >= 2) {
-      const distance = routePositions.reduce((sum, p) => (
-        typeof p?.attributes?.distance === 'number' ? sum + p.attributes.distance : sum
-      ), 0);
+      // Build visible geofence geometries
+      const geofencePolygons = Object.values(geofences)
+        .filter((gf) => !gf.attributes?.hide)
+        .map((gf) => geofenceToFeature(theme, gf))
+        .map((f) => f.geometry);
+
+      let distance = 0;
+      for (let i = 1; i < routePositions.length; i += 1) {
+        const prev = routePositions[i - 1];
+        const curr = routePositions[i];
+        const segMeters = typeof curr?.attributes?.distance === 'number' ? curr.attributes.distance : 0;
+        if (segMeters <= 0) continue;
+        const midLat = (prev.latitude + curr.latitude) / 2;
+        const midLon = (prev.longitude + curr.longitude) / 2;
+        const mid = point([midLon, midLat]);
+        const inside = geofencePolygons.some((geom) => booleanPointInPolygon(mid, geom));
+        if (!inside) {
+          distance += segMeters;
+        }
+      }
       setDailyDistanceMeters(distance);
     } else {
       setDailyDistanceMeters(null);
     }
-  }, [routePositions]);
+  }, [routePositions, geofences, theme]);
 
   useFilter(keyword, filter, filterSort, filterMap, positions, setFilteredDevices, setFilteredPositions);
 
