@@ -29,20 +29,35 @@ const canvasTintImage = (image, color) => {
 };
 
 export const prepareIcon = (background, icon, color) => {
+  const base = background || icon;
   const canvas = document.createElement('canvas');
-  canvas.width = background.width * devicePixelRatio;
-  canvas.height = background.height * devicePixelRatio;
-  canvas.style.width = `${background.width}px`;
-  canvas.style.height = `${background.height}px`;
+  canvas.width = base.width * devicePixelRatio;
+  canvas.height = base.height * devicePixelRatio;
+  canvas.style.width = `${base.width}px`;
+  canvas.style.height = `${base.height}px`;
 
   const context = canvas.getContext('2d');
-  context.drawImage(background, 0, 0, canvas.width, canvas.height);
+
+  // Draw background shape (circle) only if provided
+  if (background) {
+    context.drawImage(background, 0, 0, canvas.width, canvas.height);
+  } else {
+    // Ensure transparent background when no background image is provided
+    context.clearRect(0, 0, canvas.width, canvas.height);
+  }
 
   if (icon) {
-    const iconRatio = 0.5;
+    const iconRatio = background ? 0.5 : 1; // fill full canvas if no background
     const imageWidth = canvas.width * iconRatio;
     const imageHeight = canvas.height * iconRatio;
-    context.drawImage(canvasTintImage(icon, color), (canvas.width - imageWidth) / 2, (canvas.height - imageHeight) / 2, imageWidth, imageHeight);
+    const source = color ? canvasTintImage(icon, color) : icon;
+    context.drawImage(
+      source,
+      (canvas.width - imageWidth) / 2,
+      (canvas.height - imageHeight) / 2,
+      imageWidth,
+      imageHeight,
+    );
   }
 
   return context.getImageData(0, 0, canvas.width, canvas.height);

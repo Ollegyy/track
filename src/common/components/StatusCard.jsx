@@ -26,6 +26,7 @@ import PublishIcon from '@mui/icons-material/Publish';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import PendingIcon from '@mui/icons-material/Pending';
+import StraightenIcon from '@mui/icons-material/Straighten';
 
 import { useTranslation } from './LocalizationProvider';
 import RemoveDialog from './RemoveDialog';
@@ -35,6 +36,7 @@ import usePositionAttributes from '../attributes/usePositionAttributes';
 import { devicesActions } from '../../store';
 import { useCatch, useCatchCallback } from '../../reactHelper';
 import { useAttributePreference } from '../util/preferences';
+import { formatDistance } from '../util/formatter';
 
 const useStyles = makeStyles()((theme, { desktopPadding }) => ({
   card: {
@@ -87,16 +89,13 @@ const useStyles = makeStyles()((theme, { desktopPadding }) => ({
     pointerEvents: 'none',
     position: 'fixed',
     zIndex: 5,
-    left: '50%',
+    right: theme.spacing(3),
     [theme.breakpoints.up('md')]: {
-      left: `calc(50% + ${desktopPadding} / 2)`,
       bottom: theme.spacing(3),
     },
     [theme.breakpoints.down('md')]: {
-      left: '50%',
       bottom: `calc(${theme.spacing(3)} + ${theme.dimensions.bottomBarHeight}px)`,
     },
-    transform: 'translateX(-50%)',
   },
 }));
 
@@ -115,7 +114,7 @@ const StatusRow = ({ name, content }) => {
   );
 };
 
-const StatusCard = ({ deviceId, position, onClose, disableActions, desktopPadding = 0 }) => {
+const StatusCard = ({ deviceId, position, onClose, disableActions, desktopPadding = 0, dailyDistanceMeters }) => {
   const { classes } = useStyles({ desktopPadding });
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -127,6 +126,8 @@ const StatusCard = ({ deviceId, position, onClose, disableActions, desktopPaddin
   const shareDisabled = useSelector((state) => state.session.server.attributes.disableShare);
   const user = useSelector((state) => state.session.user);
   const device = useSelector((state) => state.devices.items[deviceId]);
+
+  const distanceUnit = useAttributePreference('distanceUnit');
 
   const deviceImage = device?.attributes?.deviceImage;
 
@@ -204,19 +205,31 @@ const StatusCard = ({ deviceId, position, onClose, disableActions, desktopPaddin
                 </CardMedia>
               ) : (
                 <div className={`${classes.header} draggable-header`}>
-                  <Typography variant="body2" color="textSecondary">
-                    {device.name}
-                  </Typography>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <Typography variant="body2" color="textSecondary">
+                      {device.name}
+                    </Typography>
+                    {typeof dailyDistanceMeters === 'number' && (
+                      <>
+                        <Typography variant="body2" color="textSecondary">|</Typography>
+                        <Typography variant="body2">
+                          <StraightenIcon fontSize="inherit" style={{ verticalAlign: 'middle', marginRight: 4, transform: 'rotate(45deg)', display: 'inline-block' }} />
+                          {formatDistance(dailyDistanceMeters, distanceUnit, t)}
+                        </Typography>
+                      </>
+                    )}
+                  </div>
                   <IconButton
                     size="small"
                     onClick={onClose}
                     onTouchStart={onClose}
-                  >
+> 
                     <CloseIcon fontSize="small" />
                   </IconButton>
                 </div>
-              )}
-              {position && (
+                 <div style={{ height: 1, width: '100%', backgroundColor: '#e0e0e0' }} />
+               )}
+               {position && (
                 <CardContent className={classes.content}>
                   <Table size="small" classes={{ root: classes.table }}>
                     <TableBody>

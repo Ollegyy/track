@@ -16,6 +16,8 @@ import useFilter from './useFilter';
 import MainToolbar from './MainToolbar';
 import MainMap from './MainMap';
 import { useAttributePreference } from '../common/util/preferences';
+import dayjs from 'dayjs';
+import { geofenceToFeature } from '../map/core/mapUtil';
 
 const useStyles = makeStyles()((theme) => ({
   root: {
@@ -62,6 +64,37 @@ const useStyles = makeStyles()((theme) => ({
   },
 }));
 
+// Point-in-polygon helpers (ray casting)
+const pointInRing = (lon, lat, ring) => {
+  let inside = false;
+  for (let i = 0, j = ring.length - 1; i < ring.length; j = i, i += 1) {
+    const xi = ring[i][0];
+    const yi = ring[i][1];
+    const xj = ring[j][0];
+    const yj = ring[j][1];
+    const intersect = ((yi > lat) !== (yj > lat)) && (lon < ((xj - xi) * (lat - yi)) / (yj - yi) + xi);
+    if (intersect) inside = !inside;
+  }
+  return inside;
+};
+
+const pointInPolygon = (lon, lat, geometry) => {
+  if (!geometry) return false;
+  if (geometry.type === 'Polygon') {
+    const [outer, ...holes] = geometry.coordinates;
+    if (!pointInRing(lon, lat, outer)) return false;
+    return !holes.some((hole) => pointInRing(lon, lat, hole));
+  }
+  if (geometry.type === 'MultiPolygon') {
+    return geometry.coordinates.some((poly) => {
+      const [outer, ...holes] = poly;
+      if (!pointInRing(lon, lat, outer)) return false;
+      return !holes.some((hole) => pointInRing(lon, lat, hole));
+    });
+  }
+  return false;
+};
+
 const MainPage = () => {
   const { classes } = useStyles();
   const dispatch = useDispatch();
@@ -73,6 +106,7 @@ const MainPage = () => {
 
   const selectedDeviceId = useSelector((state) => state.devices.selectedId);
   const positions = useSelector((state) => state.session.positions);
+  const geofences = useSelector((state) => state.geofences.items);
   const [filteredPositions, setFilteredPositions] = useState([]);
   const selectedPosition = filteredPositions.find((position) => selectedDeviceId && position.deviceId === selectedDeviceId);
 
@@ -89,6 +123,9 @@ const MainPage = () => {
   const [devicesOpen, setDevicesOpen] = useState(desktop);
   const [eventsOpen, setEventsOpen] = useState(false);
 
+  const [routePositions, setRoutePositions] = useState([]);
+  const [dailyDistanceMeters, setDailyDistanceMeters] = useState(null);
+
   const onEventsClick = useCallback(() => setEventsOpen(true), [setEventsOpen]);
 
   useEffect(() => {
@@ -96,6 +133,57 @@ const MainPage = () => {
       setDevicesOpen(false);
     }
   }, [desktop, mapOnSelect, selectedDeviceId]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    (async () => {
+      if (selectedDeviceId) {
+        const from = dayjs().startOf('day').toISOString();
+        const to = dayjs().toISOString();
+        const query = new URLSearchParams({ deviceId: selectedDeviceId, from, to });
+        try {
+          const response = await fetch(`/api/positions?${query.toString()}`, { signal: controller.signal });
+          if (response.ok) {
+            const positions = await response.json();
+            setRoutePositions(Array.isArray(positions) ? positions : []);
+          } else {
+            setRoutePositions([]);
+          }
+        } catch (e) {
+          setRoutePositions([]);
+        }
+      } else {
+        setRoutePositions([]);
+      }
+    })();
+    return () => controller.abort();
+  }, [selectedDeviceId]);
+
+  useEffect(() => {
+    if (routePositions && routePositions.length >= 2) {
+      const geofencePolygons = Object.values(geofences)
+        .filter((gf) => !gf.attributes?.hide)
+        .map((gf) => geofenceToFeature(theme, gf))
+        .map((f) => f.geometry);
+
+      let distance = 0;
+      for (let i = 1; i < routePositions.length; i += 1) {
+        const prev = routePositions[i - 1];
+        const curr = routePositions[i];
+        const segMeters = typeof curr?.attributes?.distance === 'number' ? curr.attributes.distance : 0;
+        if (segMeters <= 0) continue;
+        const midLat = (prev.latitude + curr.latitude) / 2;
+        const midLon = (prev.longitude + curr.longitude) / 2;
+        const inside = geofencePolygons.some((geom) => pointInPolygon(midLon, midLat, geom));
+        if (!inside) {
+          distance += segMeters;
+        }
+      }
+      setDailyDistanceMeters(distance);
+    } else {
+      setDailyDistanceMeters(null);
+    }
+  }, [routePositions, geofences, theme]);
 
   useFilter(keyword, filter, filterSort, filterMap, positions, setFilteredDevices, setFilteredPositions);
 
@@ -106,6 +194,7 @@ const MainPage = () => {
           filteredPositions={filteredPositions}
           selectedPosition={selectedPosition}
           onEventsClick={onEventsClick}
+          routePositions={routePositions}
         />
       )}
       <div className={classes.sidebar}>
@@ -131,6 +220,7 @@ const MainPage = () => {
                 filteredPositions={filteredPositions}
                 selectedPosition={selectedPosition}
                 onEventsClick={onEventsClick}
+                routePositions={routePositions}
               />
             </div>
           )}
@@ -151,6 +241,7 @@ const MainPage = () => {
           position={selectedPosition}
           onClose={() => dispatch(devicesActions.selectId(null))}
           desktopPadding={theme.dimensions.drawerWidthDesktop}
+          dailyDistanceMeters={dailyDistanceMeters}
         />
       )}
     </div>

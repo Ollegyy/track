@@ -26,6 +26,7 @@ import MapGeofence from '../map/MapGeofence';
 import StatusCard from '../common/components/StatusCard';
 import MapScale from '../map/MapScale';
 import BackIcon from '../common/components/BackIcon';
+import MapMeasure from '../map/measure/MapMeasure';
 
 const useStyles = makeStyles()((theme) => ({
   root: {
@@ -172,6 +173,7 @@ const ReplayPage = () => {
         )}
       </MapView>
       <MapScale />
+      <MapMeasure />
       <MapCamera positions={positions} />
       <div className={classes.sidebar}>
         <Paper elevation={3} square>
