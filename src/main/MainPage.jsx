@@ -17,8 +17,6 @@ import MainToolbar from './MainToolbar';
 import MainMap from './MainMap';
 import { useAttributePreference } from '../common/util/preferences';
 import dayjs from 'dayjs';
-import booleanPointInPolygon from '@turf/boolean-point-in-polygon';
-import { point } from '@turf/helpers';
 import { geofenceToFeature } from '../map/core/mapUtil';
 
 const useStyles = makeStyles()((theme) => ({
@@ -65,6 +63,37 @@ const useStyles = makeStyles()((theme) => ({
     zIndex: 4,
   },
 }));
+
+// Point-in-polygon helpers (ray casting)
+const pointInRing = (lon, lat, ring) => {
+  let inside = false;
+  for (let i = 0, j = ring.length - 1; i < ring.length; j = i, i += 1) {
+    const xi = ring[i][0];
+    const yi = ring[i][1];
+    const xj = ring[j][0];
+    const yj = ring[j][1];
+    const intersect = ((yi > lat) !== (yj > lat)) && (lon < ((xj - xi) * (lat - yi)) / (yj - yi) + xi);
+    if (intersect) inside = !inside;
+  }
+  return inside;
+};
+
+const pointInPolygon = (lon, lat, geometry) => {
+  if (!geometry) return false;
+  if (geometry.type === 'Polygon') {
+    const [outer, ...holes] = geometry.coordinates;
+    if (!pointInRing(lon, lat, outer)) return false;
+    return !holes.some((hole) => pointInRing(lon, lat, hole));
+  }
+  if (geometry.type === 'MultiPolygon') {
+    return geometry.coordinates.some((poly) => {
+      const [outer, ...holes] = poly;
+      if (!pointInRing(lon, lat, outer)) return false;
+      return !holes.some((hole) => pointInRing(lon, lat, hole));
+    });
+  }
+  return false;
+};
 
 const MainPage = () => {
   const { classes } = useStyles();
@@ -132,7 +161,6 @@ const MainPage = () => {
 
   useEffect(() => {
     if (routePositions && routePositions.length >= 2) {
-      // Build visible geofence geometries
       const geofencePolygons = Object.values(geofences)
         .filter((gf) => !gf.attributes?.hide)
         .map((gf) => geofenceToFeature(theme, gf))
@@ -146,8 +174,7 @@ const MainPage = () => {
         if (segMeters <= 0) continue;
         const midLat = (prev.latitude + curr.latitude) / 2;
         const midLon = (prev.longitude + curr.longitude) / 2;
-        const mid = point([midLon, midLat]);
-        const inside = geofencePolygons.some((geom) => booleanPointInPolygon(mid, geom));
+        const inside = geofencePolygons.some((geom) => pointInPolygon(midLon, midLat, geom));
         if (!inside) {
           distance += segMeters;
         }
